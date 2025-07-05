@@ -2,7 +2,7 @@
   "name": "bydchain",
   "version": "0.0.1",
   "description": "bydchain.org",
-  "main": "index.js",
+  "main": "main.js",
   "type": "module",
   "scripts": {
     "start": "node ./src/service/index.js",
@@ -10,13 +10,24 @@
     "start:3": "PORT=3002 P2P_PORT=6002 PORTS=ws:localhost:6000 node ./src/service/index.js",
     "start:4": "PORT=3003 P2P_PORT=6003 PORTS=ws:localhost:6000 node ./src/service/index.js",
     "start:ex": "node ./ejemplo_mine.js",
-    "auto-mine": "node ./autoMiner.js",
     "nodemon": "nodemon ./src/service/index.js",
     "front": "next dev -p 3000",
     "dev": "node ./dev.js",
+    "desktop:dev": "concurrently \"npm run front\" \"electron .\"",
     "eslint": "eslint index.js src",
     "test": "jest",
-    "test:watch": "jest --watchAll"
+    "test:watch": "jest --watchAll",
+    "build": "next build && next export",
+    "desktop:win": "electron-builder --win",
+    "desktop:mac": "electron-builder --mac",
+    "cli": "node ./bin/cli.js"
+  },
+  "build": {
+    "files": [
+      "out",
+      "main.js",
+      "src/**/*"
+    ]
   },
   "repository": {
     "type": "git",
@@ -29,26 +40,38 @@
   },
   "homepage": "https://github.com/ockang/bydchain#readme",
   "devDependencies": {
+    "@babel/preset-env": "^7.8.6",
+    "@types/react": "19.1.8",
+    "concurrently": "^8.2.0",
+    "electron": "^28.2.1",
+    "electron-builder": "^24.6.0",
     "eslint": "^6.8.0",
     "eslint-config-airbnb-base": "^14.0.0",
     "eslint-plugin-import": "^2.20.1",
     "jest": "^25.1.0",
-    "nodemon": "^2.0.2",
-    "@babel/preset-env": "^7.8.6"
+    "nodemon": "^2.0.2"
   },
   "dependencies": {
+    "bip32": "^2.0.6",
+    "bip39": "^3.0.4",
     "body-parser": "^1.19.0",
+    "commander": "^10.0.0",
     "crypto-js": "^4.0.0",
     "elliptic": "^6.5.2",
     "express": "^4.17.1",
-    "uuid": "^7.0.2",
-    "ws": "^7.2.1",
+    "firebase-admin": "^11.10.0",
+    "lucide-react": "^0.321.0",
+    "mongodb": "^5.7.0",
+    "mysql2": "^3.2.0",
     "next": "13.4.4",
+    "pg": "^8.10.0",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-icons": "^4.10.1",
-    "bip39": "^3.0.4",
-    "bip32": "^2.0.6"
+    "react-loading-skeleton": "^3.3.1",
+    "react-tooltip": "^5.11.0",
+    "uuid": "^7.0.2",
+    "ws": "^7.2.1"
   },
   "jest": {
     "silent": false,

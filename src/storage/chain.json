@@ -4,6 +4,47 @@
     "previousHash": null,
     "data": "S-U-N-I",
     "hash": "hash-genesis",
-    "validator": "genesis"
+    "validator": "genesis",
+    "difficulty": 1,
+    "merkleRoot": ""
+  },
+  {
+    "timestamp": 1751695961567,
+    "previousHash": "hash-genesis",
+    "data": [
+      {
+        "id": "0eef6940-5967-11f0-9253-bb2842e6e05a",
+        "input": {
+          "timestamp": 1751695961557,
+          "amount": 20,
+          "address": "040cbf47480ce6278e477698ae195d90955fc91d8412862ac768d0da92dc2019756f23bd3c606056cf3094dbd6a956a93b44c6d73101bc9672a360df5ace9da6e4",
+          "signature": {
+            "r": "4607380a2d7445a135732b7512f75cd6e1f8a726d9b679382eca8e0c88a64264",
+            "s": "92b0b048a9a65944dccd7c3ba6f95520df883469a7008c8b8172f664649678e5",
+            "recoveryParam": 0
+          }
+        },
+        "outputs": [
+          {
+            "amount": 0,
+            "address": "040cbf47480ce6278e477698ae195d90955fc91d8412862ac768d0da92dc2019756f23bd3c606056cf3094dbd6a956a93b44c6d73101bc9672a360df5ace9da6e4"
+          },
+          {
+            "amount": 20,
+            "address": "04d30c6202942f8953a8f77280e55e3fd9205e709617f0d255dfe634ba659e5700a6b0e84b7f751cf3627541a4b5c3b1eff684219657f1bd3110864573f51477d8"
+          }
+        ],
+        "script": null,
+        "asset": {
+          "type": "COIN",
+          "id": null
+        }
+      }
+    ],
+    "hash": "fd41f5cf8080924cc5a56b2fa840fb49fb58cdb62ea3f4fe8aee5cb05fafd78c",
+    "validator": "046bd8bda31b66c83b19234af07bc88e574be0fd8d522ea5aa792a2cfab42e70d93848ec90e59b2ff4fd9ba8d858b80f9a5453819ba271aa9b14f0f24b4d27e30f",
+    "signature": "30440220125a4eb12b56fb14699283be957c96f8b08687190ac75adc30ebf5f0e5b5253802204bce8e589629cc4750dd4f492949d3bb890e95c38ab9174e5ceea8e866e024ed",
+    "difficulty": 0,
+    "merkleRoot": "acbdedaeedd7af79576a10086c5af232122a104797181e838885dd8113a480fb"
   }
 ]

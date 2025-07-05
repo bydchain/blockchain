@@ -2,6 +2,9 @@ import Block from './block.js';
 import validator from './modules/validator.js';
 import MemoryPool from './memPool.js';
 import { loadBlocks, saveBlocks, loadValidators, saveValidators } from './modules/storage.js';
+import { verifyProof } from './modules/merkle.js';
+
+const DELEGATE_COUNT = 5;
 
 class Blockchain {
 
@@ -15,7 +18,9 @@ class Blockchain {
                                         b.data,
                                         b.hash,
                                         b.validator,
-                                        b.signature
+                                        b.signature,
+                                        b.difficulty,
+                                        b.merkleRoot
                                 )
                         );
                 } else {
@@ -24,12 +29,15 @@ class Blockchain {
                 this.memoryPool = new MemoryPool();
                 const storedValidators = loadValidators();
                 this.validators = storedValidators && typeof storedValidators === 'object' ? storedValidators : {};
+                this.delegateIndex = 0;
+                this.delegates = this.computeDelegates();
         }
 
         registerStake(publicKey, amount){
                 if(!this.validators[publicKey]) this.validators[publicKey] = 0;
                 this.validators[publicKey] += amount;
                 saveValidators(this.validators);
+                this.delegates = this.computeDelegates();
         }
 
         addBlock(data, validatorWallet) {
@@ -47,9 +55,9 @@ class Blockchain {
                 }
 
                 if(Object.keys(this.validators).length > 0){
-                        const selected = this.selectValidator();
-                        if(selected && selected !== vKey){
-                                throw Error('Validator not selected');
+                        const delegate = this.getCurrentDelegate();
+                        if(delegate && delegate !== vKey){
+                                throw Error('Validator not selected as delegate');
                         }
                 }
 
@@ -57,6 +65,7 @@ class Blockchain {
                 const block = Block.mine(previousBlock, data, validatorWallet);
                 this.blocks.push(block);
                 saveBlocks(this.blocks);
+                this.rotateDelegate();
 
                 return block;
         }
@@ -97,11 +106,12 @@ class Blockchain {
                 return this.blocks.find((block) => block.hash === hash);
         }
 
-        getBalance(address){
+        getBalance(address, assetType = 'COIN'){
                 let balance = 0;
                 this.blocks.forEach(({data = []}) => {
                         if(Array.isArray(data)){
-                                data.forEach(({input, outputs}) => {
+                                data.forEach(({input, outputs, asset = { type: 'COIN' }}) => {
+                                        if((asset.type || 'COIN') !== assetType) return;
                                         outputs.forEach(({address: addr, amount}) => {
                                                 if(addr === address) balance += Number(amount);
                                         });
@@ -118,6 +128,24 @@ class Blockchain {
 
         getValidators(){
                 return { ...this.validators };
+        }
+
+        computeDelegates(){
+                const entries = Object.entries(this.validators);
+                if(entries.length === 0) return [];
+                entries.sort((a, b) => Number(b[1]) - Number(a[1]));
+                return entries.slice(0, DELEGATE_COUNT).map(([addr]) => addr);
+        }
+
+        getCurrentDelegate(){
+                if(this.delegates.length === 0) return null;
+                return this.delegates[this.delegateIndex % this.delegates.length];
+        }
+
+        rotateDelegate(){
+                if(this.delegates.length > 0){
+                        this.delegateIndex = (this.delegateIndex + 1) % this.delegates.length;
+                }
         }
 
         selectValidator(){
@@ -167,6 +195,30 @@ class Blockchain {
         }
 
         /**
+         * Summarize activity for an address
+         * @param {string} address
+         * @returns {{txCount:number,sent:number,received:number}}
+         */
+        getAddressStats(address){
+                const txs = this.getTransactionsForAddress(address);
+                let sent = 0;
+                let received = 0;
+                txs.forEach(({ transaction }) => {
+                        if(transaction.input?.address === address){
+                                transaction.outputs.forEach(o => {
+                                        if(o.address !== address) sent += Number(o.amount);
+                                });
+                        }
+                        if(Array.isArray(transaction.outputs)){
+                                transaction.outputs.forEach(o => {
+                                        if(o.address === address) received += Number(o.amount);
+                                });
+                        }
+                });
+                return { txCount: txs.length, sent, received };
+        }
+
+        /**
          * Retrieve a block by its index in the chain
          * @param {number} index
          * @returns {Block|null}
@@ -195,6 +247,10 @@ class Blockchain {
                         if(Array.isArray(data)) txs.push(...data);
                 });
                 return txs;
+        }
+
+        verifyMerkleProof(tx, proof, index, merkleRoot){
+                return verifyProof(tx, proof, merkleRoot, index);
         }
 
         /**
